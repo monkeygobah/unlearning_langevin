@@ -1,2 +1,2 @@
-# unlearning_langevin
+# Unlearning Using Langevin Dynamics
 Deep Unlearning using Langevin Dynamics

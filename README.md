@@ -49,8 +49,8 @@ python main.py --forget_class 0 \
 ### Data access
 Model checkpoints original and retrain models on open source data can be downloaded from:
 
-https://drive.google.com/drive/folders/1PN5BYwHF3e0JIgM_EDvHRD5lUxhlHIGm?usp=drive_link
-
+[https://drive.google.com/drive/folders/1PN5BYwHF3e0JIgM_EDvHRD5lUxhlHIGm?usp=drive_link
+](https://drive.google.com/drive/folders/19w_w3P5MaowOTXCJOvRibW9tEMQaa4jh?usp=sharing)
 ### Acknowledgements
 
 Much of this code is based off of the original work by https://www.chenwang.net.cn/publications/Boundary-Unlearning-CVPR23.pdf

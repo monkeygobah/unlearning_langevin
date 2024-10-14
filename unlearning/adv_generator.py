@@ -7,6 +7,11 @@ import numpy as np
 from torch.distributions import normal, cauchy, laplace, uniform
 import math 
 
+```
+Much of this code based on work from Chen et. al.
+https://www.chenwang.net.cn/publications/Boundary-Unlearning-CVPR23.pdf
+```
+
 class AttackBase(object):
     def __init__(self, model=None, norm=False, discrete=True, device=None):
         self.model = model

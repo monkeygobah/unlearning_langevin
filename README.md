@@ -2,7 +2,7 @@
 Deep Unlearning using Langevin Dynamics
 
 ## Overview
- Deep unlearning is a method aimed at intentionally forgetting specific information within a neural network without impacting its overall performance. This technique is particularly useful in scenarios where privacy concerns or data regulations require the removal of specific data from trained models Our novel formualtion includes tunable control over behavior of unlearning algorithm + ablation experiments, validation on 5 datsets (2 medical, 3 standard benchmark), SOTA performance on all datasets evaluated, and a novel method of composition of unlearned algorihms
+ Deep unlearning is a method aimed at intentionally forgetting specific information within a neural network without impacting its overall performance. This technique is particularly useful in scenarios where privacy concerns or data regulations require the removal of specific data from trained models Our novel formualtion includes tunable control over behavior of unlearning algorithm + ablation experiments, validation on 5 datsets (2 medical, 3 standard benchmark), SOTA performance on all datasets evaluated, and a novel method of composition of unlearned algorithms
 
 ![fig_1_aistats](https://github.com/user-attachments/assets/241c00e0-c4dc-49a7-900e-556c198def0b)
 
@@ -51,7 +51,4 @@ Model checkpoints original and retrain models on open source data can be downloa
 
 [https://drive.google.com/drive/folders/1PN5BYwHF3e0JIgM_EDvHRD5lUxhlHIGm?usp=drive_link
 ](https://drive.google.com/drive/folders/19w_w3P5MaowOTXCJOvRibW9tEMQaa4jh?usp=sharing)
-### Acknowledgements
-
-Much of this code is based off of the original work by https://www.chenwang.net.cn/publications/Boundary-Unlearning-CVPR23.pdf
 

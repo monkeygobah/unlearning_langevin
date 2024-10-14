@@ -28,7 +28,10 @@ def save_accuracies_to_csv(gamma, test_acc, forget_acc, remain_acc, ul_class):
     
     df.to_csv(filename, index=False)
 
-
+```
+Some of this code based on work from Chen et. al.
+https://www.chenwang.net.cn/publications/Boundary-Unlearning-CVPR23.pdf
+```
 def boundary_shrink(ori_model, train_forget_loader, dt, dv, test_loader, device, 
                     bound=0.1, step=8 / 255, iter=5, poison_epoch=10, forget_class=0, path='./',
                     lambda_=0.7, bias=-0.5, slope=5.0, gamma = 0, dist = 'normal',

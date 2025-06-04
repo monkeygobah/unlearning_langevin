@@ -85,55 +85,6 @@ class Conv(nn.Sequential):
 
 
 
-# class AllCNN(nn.Module):
-#     def __init__(self, n_channels=3, num_classes=10, dropout=False, filters_percentage=1., size=32, batch_norm=True, input_size=28):
-#         super(AllCNN, self).__init__()
-#         n_filter1 = int(size * 3 * filters_percentage)
-#         n_filter2 = int(size * 6 * filters_percentage)
-        
-#         # Convolutional feature extraction layers
-#         self.features = nn.Sequential(
-#             Conv(n_channels, n_filter1, kernel_size=3, batch_norm=batch_norm),
-#             Conv(n_filter1, n_filter1, kernel_size=3, batch_norm=batch_norm),
-#             Conv(n_filter1, n_filter2, kernel_size=3, stride=2, padding=1, batch_norm=batch_norm),
-#             nn.Dropout(inplace=False) if dropout else Identity(),
-#             Conv(n_filter2, n_filter2, kernel_size=3, stride=1, batch_norm=batch_norm),
-#             Conv(n_filter2, n_filter2, kernel_size=3, stride=1, batch_norm=batch_norm),
-#             Conv(n_filter2, n_filter2, kernel_size=3, stride=2, padding=1, batch_norm=batch_norm),
-#             nn.Dropout(inplace=False) if dropout else Identity(),
-#             Conv(n_filter2, n_filter2, kernel_size=3, stride=1, batch_norm=batch_norm),
-#             Conv(n_filter2, n_filter2, kernel_size=1, stride=1, batch_norm=batch_norm),
-#         )
-        
-#         # Calculate the resulting size after convolutions
-#         self.avg_pool_size = input_size // 8  
-#         self.pool = nn.AvgPool2d(self.avg_pool_size)
-        
-#         # Dynamically compute the number of features after the convolutional layers
-#         self._n_features = self._get_conv_output_size(input_size, n_filter2)
-
-#         self.flatten = Flatten()
-
-#         # Classifier
-#         self.classifier = nn.Sequential(
-#             nn.Linear(self._n_features, num_classes),
-#         )
-
-#     def forward(self, x):
-#         features = self.features(x)
-#         features = self.pool(features)
-#         features = self.flatten(features)
-#         output = self.classifier(features)
-#         return output
-
-#     def _get_conv_output_size(self, input_size, n_filter2):
-#         # This helper function computes the size after convolution and pooling
-#         with torch.no_grad():
-#             sample_input = torch.zeros(1, 1, input_size, input_size)  # Create a dummy input tensor
-#             output_feat = self.features(sample_input)
-#             output_feat = self.pool(output_feat)  # Apply pooling to the dummy tensor
-#             return output_feat.numel()  # Flatten the tensor to get the number of features
-
 
 
 class AllCNN(nn.Module):
@@ -166,50 +117,16 @@ class AllCNN(nn.Module):
         return output
 
 
-# Target/Shadow Model for MNIST
-class MNISTNet(nn.Module):
-    def __init__(self, input_dim=1, n_hidden=32, out_classes=10, size=28):
-        super(MNISTNet, self).__init__()
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(in_channels=input_dim, out_channels=n_hidden, kernel_size=5),
-            nn.BatchNorm2d(n_hidden),
-            # nn.Dropout(p=0.5),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2)
-        )
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(in_channels=n_hidden, out_channels=n_hidden * 2, kernel_size=5),
-            nn.BatchNorm2d(n_hidden * 2),
-            # nn.Dropout(p=0.5),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2)
-        )
-
-        features = calc_feat_linear_mnist(size)
-        self.classifier = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(features ** 2 * (n_hidden * 2), n_hidden * 2),
-            nn.ReLU(inplace=True),
-            nn.Linear(n_hidden * 2, out_classes)
-        )
-
-    def forward(self, x):
-        out = self.conv1(x)
-        out = self.conv2(out)
-        out = self.classifier(out)
-        return out
 
 
 
 class CustomResNet(nn.Module):
     def __init__(self, num_classes):
         super(CustomResNet, self).__init__()
-        # Load a pretrained ResNet and remove its final fully connected layer
         self.resnet_base = resnet50(weights=ResNet50_Weights.DEFAULT)
         num_ftrs = self.resnet_base.fc.in_features
-        self.resnet_base.fc = nn.Identity()  # Keep the convolutional features
+        self.resnet_base.fc = nn.Identity()  
 
-        # The classifier replaces the original ResNet's fc layer
         self._classifier = nn.Sequential(
             nn.Dropout(0.5),
             nn.Linear(num_ftrs, num_classes),
@@ -227,7 +144,7 @@ class CustomResNet(nn.Module):
 
     def forward(self, x):
         x = self.resnet_base(x)
-        x = torch.flatten(x, 1)  # Flatten the features for the classifier
+        x = torch.flatten(x, 1)  
         x = self._classifier(x)
         return x
     

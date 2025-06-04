@@ -37,14 +37,9 @@ def boundary_shrink(ori_model, train_forget_loader, dt, dv, test_loader, device,
                     train_remain_loader = None, use_logits = False, remain_reg_param = 0.0, logit_preprocess=False, selective_unlearning=False):
     
     start = time.time()
-    if data_name == 'mnist':
-        norm = False  # None#True if data_name != "mnist" else False
-    else:
-        norm = True
 
-    random_start = False  # False if attack != "pgd" else True
-    
-    # Copy the original model to create a test model and an unlearning model, 
+    norm = True
+    random_start = False  
     
     test_model = copy.deepcopy(ori_model).to(device)
 
@@ -52,12 +47,8 @@ def boundary_shrink(ori_model, train_forget_loader, dt, dv, test_loader, device,
 
     start_time = time.time()
     
-    # Adversarial attack configuration
-    if use_linfpgd:
-        # only for ViT
-        adv = LinfPGD(test_model, bound, step, iter, norm, random_start, device,  gamma)
-    else:
-        adv = FGSM(test_model, bound, norm, random_start, device)
+
+    adv = FGSM(test_model, bound, norm, random_start, device)
     
     forget_data_gen = inf_generator(train_forget_loader)
     remain_data_gen = inf_generator(train_remain_loader)
@@ -157,9 +148,6 @@ def boundary_shrink(ori_model, train_forget_loader, dt, dv, test_loader, device,
 
 
 
-    # np.save('nearest_label', nearest_label)
-
-
     torch.save(unlearn_model,output_name+'.pth')
     
     if not custom_forget:
@@ -225,10 +213,8 @@ def boundary_shrink(ori_model, train_forget_loader, dt, dv, test_loader, device,
 
 
 def preprocess_logits(logits, top_k=3):
-    # Get the top K values and their indices
     topk_values, topk_indices = torch.topk(logits, top_k, dim=1)
     
-    # Create a mask for the top K logits
     mask = torch.zeros_like(logits)
     mask.scatter_(1, topk_indices, topk_values)
     

@@ -37,7 +37,6 @@ def set_up_save(args, distributions, gamma_values, l1_norms, name):
                     csv_columns.append(f'Remain Acc {dist}_lambda_{gamma}_{setting}')
                     csv_columns.append(f'Per Class Accuracies {dist}_lambda_{gamma}_{setting}')
 
-    # Initialize the CSV file with headers
     with open(output_file_name, 'w', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
         writer.writeheader()
@@ -63,10 +62,8 @@ def map_metadata(dataset, df):
     return metadata_dict
 
 def create_ohe_vector(row):
-    # Define the unique attributes in the order they will appear in the vector
     attributes = ['OS', 'OD', 'Spectralis (Scans)', 'Cirrus 800 FA', '2015', '2016', '2017', '2018']
 
-    # Initialize the vector with zeros
     ohe_vector = [0] * len(attributes)
     
     # Eye side (OS/OD)

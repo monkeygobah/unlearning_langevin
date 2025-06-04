@@ -22,17 +22,12 @@ from ensemble import run_exps
 def main(args):
     torch.cuda.empty_cache()
     seed_torch()
-    
-    # set up output file for dirty logging
-    # TODO improve logging   
+        # TODO improve logging   
     # gamma_values = [.1, 0.5, 0.9]
     gamma_values = [0, .0001, .1, 1]
-    # gamma_values = [0, .0001]
 
-    # l1_norms = [True, False]
     l1_norms = [False]
     # distributions = ['normal', 'cauchy', 'laplacian', 'uniform']
-    # distributions = ['normal', 'cauchy']
     distributions = ['normal']
 
     csv_columns, output_file_name = set_up_save(args, distributions, gamma_values, l1_norms, args.name)
@@ -93,11 +88,9 @@ def main(args):
 
 
     if args.tsne_embeddings:
-
-
         print('doing embeddings')
 
-        fig, axes = plt.subplots(1, 3, figsize=(18, 6))  # reduce aspect ratio
+        fig, axes = plt.subplots(1, 3, figsize=(18, 6)) 
 
         original_model = torch.load(args.original_model)
         retrained_model = torch.load(args.retrain_model)
@@ -121,10 +114,7 @@ def main(args):
         
         breakpoint
 
-
     if args.ensemble:
-        print(len(train_remain_loader))
-
         run_exps(args, testset, trainset, train_remain_loader, finetune=True, frozen=False)
 
 
@@ -133,9 +123,11 @@ def main(args):
                  csv_columns, distributions, gamma_values,exp_name = args.name)
 
     if args.do_unlearning:
+        '''
+        set gamma and lambda = 0
+        '''
         if args.run_sota:
             print('DOING BOUNDARY SHRINKAGE WITH SOTA METHOD')
-            # save_me = f'SOTA_{args.data_name}_{args.forget_class}_{args.model_name}'
             save_me = args.name + '_SOTA'
             unlearn_model_sota, forget_acc_sota, remain_acc_sota, unlearning_time = boundary_unlearning.boundary_shrink(
                     ori_model, train_forget_loader, trainset, testset, test_loader, device, 
@@ -160,69 +152,72 @@ def main(args):
                 row_data['Per Class Accuracies SOTA'] = json.dumps(per_class_accs_sota)
                 writer.writerow(row_data)
 
-        # If using closest points regularization
-        if args.closest_points and not args.specific_settings:
-            print('DOING BOUNDARY SHRINKAGE WITH multiple GAMMAS AND DISTRIBUTIONS')
-            for dist in distributions:
-                for lamda in gamma_values:
-                    for l1_setting in l1_norms:
-                        save_me = f'CLOSEST_{args.data_name}_{args.forget_class}_{lamda}_{dist}_{args.scaling}'
-                        unlearn_model, forget_acc, remain_acc, _ = boundary_unlearning.boundary_shrink(
-                            ori_model, train_forget_loader, trainset, testset, test_loader, device,
-                            forget_class=args.forget_class, path=path, custom_forget=args.custom_unlearn, to_forget=args.to_forget,
-                            test_metadata=test_dict, train_metadata=train_dict, gamma=0,
-                            dist=dist, output_name=save_me, use_linfpgd=args.use_linfpgd, lamda=lamda, l1_norm=l1_setting, data_name = args.data_name, scaling = args.scaling, 
-                            oculoplastics=args.oculoplastics, retrain_model=retrain_model, train_remain_loader=train_remain_loader, use_logits = args.use_logits,
-                        remain_reg_param= args.remain_reg, logit_preprocess= args.logit_preprocess, selective_unlearning=SELECTIVE_UNLEARNING
-                        )
-                        per_class_accs = test(unlearn_model, test_loader, idx_to_class, num_classes, device)
 
-                        # Update row data
-                        row_data[f'Forget Acc {dist}_lambda_{lamda}_{l1_setting}'] = forget_acc.detach().item()
-                        row_data[f'Remain Acc {dist}_lambda_{lamda}_{l1_setting}'] = remain_acc.detach().item()
-                        row_data[f'Per Class Accuracies {dist}_lambda_{lamda}_{l1_setting}'] = json.dumps(per_class_accs)
+        '''
+        Loops for hp tuning gamma and lambda values
+        '''
+        # # If using closest points regularization
+        # if args.closest_points and not args.specific_settings:
+        #     print('DOING BOUNDARY SHRINKAGE WITH multiple GAMMAS AND DISTRIBUTIONS')
+        #     for dist in distributions:
+        #         for lamda in gamma_values:
+        #             for l1_setting in l1_norms:
+        #                 save_me = f'CLOSEST_{args.data_name}_{args.forget_class}_{lamda}_{dist}_{args.scaling}'
+        #                 unlearn_model, forget_acc, remain_acc, _ = boundary_unlearning.boundary_shrink(
+        #                     ori_model, train_forget_loader, trainset, testset, test_loader, device,
+        #                     forget_class=args.forget_class, path=path, custom_forget=args.custom_unlearn, to_forget=args.to_forget,
+        #                     test_metadata=test_dict, train_metadata=train_dict, gamma=0,
+        #                     dist=dist, output_name=save_me, use_linfpgd=args.use_linfpgd, lamda=lamda, l1_norm=l1_setting, data_name = args.data_name, scaling = args.scaling, 
+        #                     oculoplastics=args.oculoplastics, retrain_model=retrain_model, train_remain_loader=train_remain_loader, use_logits = args.use_logits,
+        #                 remain_reg_param= args.remain_reg, logit_preprocess= args.logit_preprocess, selective_unlearning=SELECTIVE_UNLEARNING
+        #                 )
+        #                 per_class_accs = test(unlearn_model, test_loader, idx_to_class, num_classes, device)
 
-                        with open(output_file_name, 'a', newline='') as csvfile:
-                            writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
-                            writer.writerow(row_data)
+        #                 # Update row data
+        #                 row_data[f'Forget Acc {dist}_lambda_{lamda}_{l1_setting}'] = forget_acc.detach().item()
+        #                 row_data[f'Remain Acc {dist}_lambda_{lamda}_{l1_setting}'] = remain_acc.detach().item()
+        #                 row_data[f'Per Class Accuracies {dist}_lambda_{lamda}_{l1_setting}'] = json.dumps(per_class_accs)
 
-        # If sgld algorithm
-        if args.sgld and not args.specific_settings:
-            print('DOINT UNLEARNING WITH SGLD and closest points')
-            for dist in distributions:
-                for gamma in gamma_values:
-                    # save_me = f'SGLD_{args.data_name}_{args.forget_class}_gamma:_{gamma}_{dist}_lamda:{args.lamda}_remain_reg{args.remain_reg}'
-                    save_me = args.name
+        #                 with open(output_file_name, 'a', newline='') as csvfile:
+        #                     writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
+        #                     writer.writerow(row_data)
 
-                    unlearn_model, forget_acc, remain_acc, _ = boundary_unlearning.boundary_shrink(
-                        ori_model, train_forget_loader, trainset, testset, test_loader, device,
-                        forget_class=args.forget_class, path=path, custom_forget=args.custom_unlearn, to_forget=args.to_forget,
-                        test_metadata=test_dict, train_metadata=train_dict, gamma=gamma,
-                        dist=dist, output_name=save_me, use_linfpgd=False, lamda=args.lamda, l1_norm=False, data_name = args.data_name, scaling = None, 
-                        oculoplastics=args.oculoplastics, retrain_model=retrain_model, train_remain_loader=train_remain_loader, use_logits = args.use_logits,
-                        remain_reg_param= args.remain_reg, logit_preprocess= args.logit_preprocess, selective_unlearning=SELECTIVE_UNLEARNING
-                    )
-                    per_class_accs = test(unlearn_model, test_loader, idx_to_class, num_classes, device)
+        # # If sgld algorithm
+        # if args.sgld and not args.specific_settings:
+        #     print('DOINT UNLEARNING WITH SGLD and closest points')
+        #     for dist in distributions:
+        #         for gamma in gamma_values:
+        #             # save_me = f'SGLD_{args.data_name}_{args.forget_class}_gamma:_{gamma}_{dist}_lamda:{args.lamda}_remain_reg{args.remain_reg}'
+        #             save_me = args.name
 
-                    # Update row data
-                    row_data[f'Forget Acc {dist} {gamma}'] = forget_acc.detach().item()
-                    row_data[f'Remain Acc {dist} {gamma}'] = remain_acc.detach().item()
-                    row_data[f'Per Class Accuracies {dist} {gamma}'] = json.dumps(per_class_accs)
+        #             unlearn_model, forget_acc, remain_acc, _ = boundary_unlearning.boundary_shrink(
+        #                 ori_model, train_forget_loader, trainset, testset, test_loader, device,
+        #                 forget_class=args.forget_class, path=path, custom_forget=args.custom_unlearn, to_forget=args.to_forget,
+        #                 test_metadata=test_dict, train_metadata=train_dict, gamma=gamma,
+        #                 dist=dist, output_name=save_me, use_linfpgd=False, lamda=args.lamda, l1_norm=False, data_name = args.data_name, scaling = None, 
+        #                 oculoplastics=args.oculoplastics, retrain_model=retrain_model, train_remain_loader=train_remain_loader, use_logits = args.use_logits,
+        #                 remain_reg_param= args.remain_reg, logit_preprocess= args.logit_preprocess, selective_unlearning=SELECTIVE_UNLEARNING
+        #             )
+        #             per_class_accs = test(unlearn_model, test_loader, idx_to_class, num_classes, device)
 
-                    with open(output_file_name, 'a', newline='') as csvfile:
-                        writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
-                        writer.writerow(row_data)
+        #             # Update row data
+        #             row_data[f'Forget Acc {dist} {gamma}'] = forget_acc.detach().item()
+        #             row_data[f'Remain Acc {dist} {gamma}'] = remain_acc.detach().item()
+        #             row_data[f'Per Class Accuracies {dist} {gamma}'] = json.dumps(per_class_accs)
 
+        #             with open(output_file_name, 'a', newline='') as csvfile:
+        #                 writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
+        #                 writer.writerow(row_data)
+
+
+        '''
+        Use this argument to unlearn using specific settings
+        '''
         # If specific settings
         if args.specific_settings:
-            print('DOING UNLEARNING WITH specific setting')
-            print(args.oculoplastics)
-            # UNLEARNING SPECIFIC MODEL
             lamda = args.lamda
             gamma = args.gamma
             dist = 'normal'
-            print(args.use_linfpgd)
-            # save_me = f'SPECIFOC_{args.data_name}_{args.to_forget}_lamnda_{lamda}_gamma_{gamma}_{dist}_{args.model_name}'
             save_me = args.name
 
             unlearn_model, forget_acc, remain_acc, boundary_shrink_time = boundary_unlearning.boundary_shrink(
@@ -240,9 +235,9 @@ def main(args):
             per_class_accs = test(unlearn_model, test_loader, idx_to_class, num_classes, device)
 
             # Update row data
-            row_data[f'Forget Acc {dist}_lambda_{gamma}_{l1_setting}'] = forget_acc.detach().item()
-            row_data[f'Remain Acc {dist}_lambda_{gamma}_{l1_setting}'] = remain_acc.detach().item()
-            row_data[f'Per Class Accuracies {dist}_lambda_{gamma}_{l1_setting}'] = json.dumps(per_class_accs)
+            row_data[f'Forget Acc {dist}_lambda_{gamma}'] = forget_acc.detach().item()
+            row_data[f'Remain Acc {dist}_lambda_{gamma}'] = remain_acc.detach().item()
+            row_data[f'Per Class Accuracies {dist}_lambda_{gamma}'] = json.dumps(per_class_accs)
 
             with open(output_file_name, 'a', newline='') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
@@ -254,23 +249,6 @@ if __name__ == '__main__':
     args = get_parameters()
     main(args)
 
-
-
-    # if args.data_name == 'oculoplastic':
-    #     divide_by = 114
-    # elif args.data_name == 'fundus_3_class':
-    #     divide_by = 1000
-    # elif args.data_name == 'oct_4_class':
-    #     divide_by = 1500
-    # elif args.data_name == 'open_source':
-    #     divide_by = 500
-    # elif args.data_name == 'dr_grade':
-    #     divide_by = 62
-    # else:
-    #     divide_by = 100000
-
-    # num_forget = int(divide_by * args.percent_to_forget)
-    # print(num_forget)
 
 
 

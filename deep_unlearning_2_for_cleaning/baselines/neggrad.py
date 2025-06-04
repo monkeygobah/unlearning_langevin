@@ -9,7 +9,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from mia_metric import *
+from deep_unlearning_2_for_cleaning.baselines.baseline_main import *
 from thirdparty.repdistiller.helper.util import adjust_learning_rate as sgda_adjust_learning_rate
 from thirdparty.repdistiller.distiller_zoo import DistillKL, HintLoss, Attention, Similarity, Correlation, VIDLoss, RKDLoss
 from thirdparty.repdistiller.distiller_zoo import PKT, ABLoss, FactorTransfer, KDSVD, FSP, NSTLoss

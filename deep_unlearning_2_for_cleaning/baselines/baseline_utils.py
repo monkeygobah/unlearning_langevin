@@ -313,28 +313,22 @@ def split_metadata_data_oculoplastics(subset, metadata_dict, num_forget):
 
 
 def create_ohe_vector(row):
-    # Define the unique attributes in the order they will appear in the vector
     attributes = ['OS', 'OD', 'Spectralis (Scans)', 'Cirrus 800 FA', '2015', '2016', '2017', '2018']
 
-    # Initialize the vector with zeros
     ohe_vector = [0] * len(attributes)
     
-    # Eye side (OS/OD)
     if row['WhichEye'].values[0] == 'OS':
         ohe_vector[0] = 1
     elif row['WhichEye'].values[0] == 'OD':
         ohe_vector[1] = 1
-    
-    # Device
+
     if 'Spectralis' in row['DeviceProc'].values[0]:
         ohe_vector[2] = 1
     elif 'Cirrus 800 FA' in row['DeviceProc'].values[0]:
         ohe_vector[3] = 1
 
-    # Exam Date
     date_str = row['ExamDate'].values[0]
     try:
-        # Adjust the format string to match the actual format of your dates
         exam_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
         year = str(exam_date.year)
         if year in attributes[4:]:
@@ -372,17 +366,14 @@ def get_custom_unlearn_loader(trainset, testset, train_dict, test_dict, unlearn_
     num_forget = 1000
     repair_num_ratio = 0.01  
     
-    # Use the split_metadata_data function for both train and test sets
     train_forget_index, train_remain_index, class_remain_index = split_metadata_data(
         trainset, train_dict, unlearn_attribute, num_forget)
     
     test_forget_index, test_remain_index, _ = split_metadata_data(
         testset, test_dict, unlearn_attribute, num_forget=len(testset.dataset.imgs))
 
-    # Sampling a subset of the class_remain_index for repairs
     repair_class_index = random.sample(class_remain_index, int(repair_num_ratio * len(class_remain_index)))
 
-    # Creating samplers based on the indices
     train_forget_sampler = SubsetRandomSampler(train_forget_index)
     train_remain_sampler = SubsetRandomSampler(train_remain_index)
     
@@ -391,7 +382,6 @@ def get_custom_unlearn_loader(trainset, testset, train_dict, test_dict, unlearn_
     test_forget_sampler = SubsetRandomSampler(test_forget_index)
     test_remain_sampler = SubsetRandomSampler(test_remain_index)
 
-    # Creating data loaders using the samplers
     train_forget_loader = torch.utils.data.DataLoader(dataset=trainset, batch_size=batch_size, sampler=train_forget_sampler)
     train_remain_loader = torch.utils.data.DataLoader(dataset=trainset, batch_size=batch_size, sampler=train_remain_sampler)
 
@@ -413,21 +403,21 @@ def split_metadata_data(subset, metadata_dict, unlearn_attribute, num_forget):
     remain_index = []
     sum = 0
     
-    original_dataset = subset.dataset  # Access the original dataset
-    for i, subset_index in enumerate(subset.indices):  # Iterate through indices of the subset
-        img_path, _ = original_dataset.imgs[subset_index]  # Access the image path using the original dataset
+    original_dataset = subset.dataset 
+    for i, subset_index in enumerate(subset.indices):  
+        img_path, _ = original_dataset.imgs[subset_index]  
         filename = os.path.basename(img_path)
         if filename in metadata_dict:
             ohe_vector = metadata_dict[filename]
             if ohe_vector[attr_index] == 1 and sum < num_forget:
-                forget_index.append(i)  # Use subset_index
+                forget_index.append(i)  
                 sum += 1
             elif ohe_vector[attr_index] == 1 and sum >= num_forget:
-                class_remain_index.append(i)  # Use subset_index
-                remain_index.append(i)  # Use subset_index
+                class_remain_index.append(i)  
+                remain_index.append(i)  
                 sum += 1
             else:
-                remain_index.append(i)  # Use subset_index
+                remain_index.append(i)  
 
     return forget_index, remain_index, class_remain_index
 
@@ -435,19 +425,15 @@ def split_metadata_data(subset, metadata_dict, unlearn_attribute, num_forget):
 
 def resize_width_pad_height(target_width=512, target_height=512):
     def transform(image):
-        # Calculate the new height maintaining the aspect ratio
         aspect_ratio = image.width / image.height
         new_height = int(round(target_width / aspect_ratio))
 
-        # Resize the image to have the correct width
         resize_transform = transforms.Resize((new_height, target_width))
         resized_image = resize_transform(image)
 
-        # Calculate padding to add to the top and bottom to reach the target height
         padding_top = (target_height - new_height) // 2
         padding_bottom = target_height - new_height - padding_top
 
-        # Pad the resized image to have the correct height
         pad_transform = transforms.Pad((0, padding_top, 0, padding_bottom), fill=0, padding_mode='constant')
         padded_image = pad_transform(resized_image)
 
@@ -478,12 +464,11 @@ def get_dataset(data_name, path='./data'):
         return trainset, testset, dataset
 
     elif data_name == 'fashionmnist':
-        # FashionMNIST is grayscale (1 channel) and has 28x28 images, so we resize to 32x32
         train_transform = transforms.Compose([
-            transforms.Resize(32),  # Resize to 32x32
+            transforms.Resize(32), 
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize((0.5,), (0.5,))  # FashionMNIST-specific grayscale normalization
+            transforms.Normalize((0.5,), (0.5,))  
         ])
         
         test_transform = transforms.Compose([
@@ -498,7 +483,7 @@ def get_dataset(data_name, path='./data'):
         return trainset, testset, dataset
 
     elif data_name == 'medmnist':
-        info = INFO['pathmnist']  # You can adjust 'pathmnist' for different MedMNIST datasets
+        info = INFO['pathmnist']  
 
         n_channels = info['n_channels']
         n_classes = len(info['label'])
@@ -509,13 +494,13 @@ def get_dataset(data_name, path='./data'):
             transforms.Resize(32),  # Resize to 32x32
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))  # RGB normalization (assuming 3 channels)
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))  
         ])
         
         test_transform = transforms.Compose([
-            transforms.Resize(32),  # Resize to 32x32
+            transforms.Resize(32),  
             transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))  # RGB normalization
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))  
         ])
         
         trainset = DataClass(split='train', transform=train_transform, download=True)
@@ -621,17 +606,15 @@ def load_model_state(model, checkpoint_path):
 
 def load_checkpoint_without_dataparallel(checkpoint_path, model):
     checkpoint = torch.load(checkpoint_path)
-    # Check if the checkpoint is a `DataParallel`-wrapped model
     if isinstance(checkpoint, torch.nn.DataParallel):
         checkpoint = checkpoint.module.state_dict()
-    elif not isinstance(checkpoint, dict):  # Handle unexpected cases
+    elif not isinstance(checkpoint, dict):  
         checkpoint = checkpoint.state_dict()
-    # If the state dictionary keys are prefixed with "module.", strip it
     if "module." in list(checkpoint.keys())[0]:  
         from collections import OrderedDict
         new_state_dict = OrderedDict()
         for k, v in checkpoint.items():
-            new_key = k.replace("module.", "")  # Remove "module." prefix
+            new_key = k.replace("module.", "") 
             new_state_dict[new_key] = v
         checkpoint = new_state_dict
     model.load_state_dict(checkpoint)
@@ -728,10 +711,8 @@ def membership_inference_attack(model, test_loader, forget_loader, device, seed=
 
     if len(forget_losses) > len(test_losses):
         forget_losses = random.sample(forget_losses, len(test_losses))
-        print('BALANCING 1 LOOOOKKKKK')
     elif len(test_losses) > len(forget_losses):
         test_losses = random.sample(test_losses, len(forget_losses))
-        print('BALANCING 2 LOOOOKKKKK')
 
     # 4) Plot histograms
     sns.histplot(test_losses, kde=False, label="test-loss", color="blue")

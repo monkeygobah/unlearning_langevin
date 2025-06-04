@@ -27,7 +27,7 @@ def test(model, loader, idx_to_class, num_classes, device):
             target = target.to(device)
 
             output = model(data)
-            pred = output.argmax(dim=1, keepdim=True)  # Get the index of the max log-probability
+            pred = output.argmax(dim=1, keepdim=True)  
             
             for i in range(target.size(0)):
                 label = target[i].item()
@@ -191,8 +191,7 @@ if __name__ == '__main__':
                 num_forget = int(total_forget_class * percentage)
                 print(f"Forget Percentage: {percentage}, Number to Forget: {num_forget}")
 
-                # train_forget_loader, train_remain_loader, test_forget_loader, test_remain_loader, repair_class_loader, \
-                # train_forget_index, train_remain_index, test_forget_index, test_remain_index,train_dict, test_dict = dataloader_engine(batch_size, trainset, testset, num_forget=num_forget, selective_unlearning=SELECTIVE_UNLEARNING)
+
                 
                 train_forget_loader, train_remain_loader, test_forget_loader, test_remain_loader, repair_class_loader, \
                 train_forget_index, train_remain_index, test_forget_index, test_remain_index, train_dict, test_dict = dataloader_engine(batch_size, trainset, testset, 
@@ -207,22 +206,18 @@ if __name__ == '__main__':
                     assert set(train_forget_index) == set(test_forget_index), "Train and test forget indices do not match!"
                     assert set(train_remain_index) == set(test_remain_index), "Train and test remain indices do not match!"
                 else:
-                    # final_forget_loader, final_remain_loader = get_forget_loader(testset, 0)
                     if not custom_unlearn:
                         if SELECTIVE_UNLEARNING:
                             final_forget_loader = train_forget_loader
                             final_remain_loader = train_remain_loader
                         else:
                             final_forget_loader, final_remain_loader = get_forget_loader(testset, forget_class)
-                            # _, _ = get_forget_loader(trainset, forget_class)
 
                     elif custom_unlearn and not oculoplastics:
                         final_forget_loader, final_remain_loader = get_custom_forget_loader(testset, test_dict, 'Cirrus 800 FA')
-                        # _, _ = get_custom_forget_loader(trainset, train_dict, 'Cirrus 800 FA')
 
                     elif custom_unlearn and oculoplastics:
                         final_forget_loader, final_remain_loader = get_custom_forget_loader_oculoplastics(testset, test_dict)
-                        # _, _ = get_custom_forget_loader_oculoplastics(trainset, train_dict)
 
                 model = load_model(model_type, num_classes=num_classes, data_name =data_name).to(device)
                 model = load_model_state(model, orig_model_path)
@@ -346,29 +341,3 @@ if __name__ == '__main__':
             oculoplastics =  False
 
             print(f"Results saved to {output_file}")
-        # except:
-        #     pass
-
-# train_loader_full, valid_loader_full, test_loader_full = datasets.get_loaders(dataset, batch_size=batch_size, seed=seed, root=dataroot, augment=False, shuffle=True)
-# marked_loader, _, _ = datasets.get_loaders(dataset, class_to_replace= forget_class, num_indexes_to_replace=num_to_forget, only_mark=True, batch_size=1, seed=s, root=args.dataroot, augment=False, shuffle=True)
-
-# forget_dataset = copy.deepcopy(marked_loader.dataset)
-# marked = forget_dataset.targets < 0
-
-# forget_dataset.data = forget_dataset.data[marked]
-# forget_dataset.targets = - forget_dataset.targets[marked] - 1
-
-# #forget_loader = torch.utils.data.DataLoader(forget_dataset, batch_size=args.forget_bs,num_workers=0,pin_memory=True,shuffle=True)
-# forget_loader = replace_loader_dataset(train_loader_full, forget_dataset, batch_size=forget_bs, seed=seed, shuffle=True)
-
-# retain_dataset = copy.deepcopy(marked_loader.dataset)
-# marked = retain_dataset.targets >= 0
-# retain_dataset.data = retain_dataset.data[marked]
-# retain_dataset.targets = retain_dataset.targets[marked]
-
-# #retain_loader = torch.utils.data.DataLoader(retain_dataset, batch_size=args.retain_bs,num_workers=0,pin_memory=True,shuffle=True)
-# retain_loader = replace_loader_dataset(train_loader_full, retain_dataset, batch_size=retain_bs, seed=seed, shuffle=True)
-
-# assert(len(forget_dataset) + len(retain_dataset) == len(train_loader_full.dataset))
-
-

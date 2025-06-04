@@ -15,22 +15,7 @@ from torchvision import datasets
 from sklearn.utils.class_weight import compute_class_weight
 import numpy as np
 
-# def loss_picker(loss):
-#     if loss == 'mse':
-#         criterion = nn.MSELoss()
-#     elif loss == 'cross':
-#         # Assuming `train_labels` is a list or numpy array of all labels in your training set
-#         class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(train_labels), y=train_labels)
-#         class_weights = torch.tensor(class_weights, dtype=torch.float32).to(device)
 
-#         # Define the loss function with class weights
-#         criterion = nn.CrossEntropyLoss(weight=class_weights)
-#         criterion = nn.CrossEntropyLoss()
-#     else:
-#         print("automatically assign mse loss function to you...")
-#         criterion = nn.MSELoss()
-
-#     return criterion
 def loss_picker(loss, train_loader=None, device='cpu'):
     if loss == 'mse':
         criterion = nn.MSELoss()
@@ -78,17 +63,17 @@ def train(model, data_loader, criterion, optimizer, loss_mode, device='cpu'):
         batch_y = batch_y.to(device)
 
         if len(batch_y.shape) > 1:
-            batch_y = batch_y.squeeze()  # Convert one-hot encoded targets to class indices
+            batch_y = batch_y.squeeze()  
 
         optimizer.zero_grad()
         
-        output = model(batch_x)  # get predict label of batch_x
+        output = model(batch_x) 
 
 
         if loss_mode == "mse":
-            loss = criterion(output, batch_y)  # mse loss
+            loss = criterion(output, batch_y)  
         elif loss_mode == "cross":
-            loss = criterion(output, batch_y)  # torch.argmax(batch_y, dim=1))  # cross entropy loss
+            loss = criterion(output, batch_y)  
         elif loss_mode == 'neg_grad':
             loss = -criterion(output, batch_y)
  
@@ -104,9 +89,8 @@ def train_save_model(train_loader, test_loader, model_name, optim_name, learning
     accuracies = []
     
     if dataset:
-        # Check for specific dataset types and handle them accordingly
         if isinstance(dataset, datasets.SVHN):
-            original_targets = dataset.labels  # SVHN stores labels in dataset.labels
+            original_targets = dataset.labels  
         elif isinstance(dataset, (datasets.MNIST, datasets.CIFAR10)):
             if isinstance(dataset.targets, torch.Tensor):
                 original_targets = dataset.targets.tolist()
@@ -118,16 +102,12 @@ def train_save_model(train_loader, test_loader, model_name, optim_name, learning
         if data_name == 'medmnist':
             num_classes = 9
         else:
-            # Dynamically determine the number of classes present
             num_classes = len(set(original_targets))
             print(num_classes)
     else:
         num_classes = max(train_loader.dataset.targets) + 1
 
-    # if relearning and unlearned_model is not None:
-    #     model = unlearned_model
-    #     model.to(device)
-    # else:
+
     if model_name == 'resnet':
         model = CustomResNet(num_classes=num_classes)
         model = nn.DataParallel(model) 
@@ -201,23 +181,23 @@ def train_save_model(train_loader, test_loader, model_name, optim_name, learning
         for epoch, (loss, acc) in enumerate(zip(losses, accuracies), 1):
             writer.writerow([epoch, loss, acc])    
             
-        # Plotting
-    fig, ax1 = plt.subplots()
+    #     # Plotting
+    # fig, ax1 = plt.subplots()
 
-    color = 'tab:red'
-    ax1.set_xlabel('Epoch')
-    ax1.set_ylabel('Loss', color=color)
-    ax1.plot(range(num_epochs), losses, color=color)
-    ax1.tick_params(axis='y', labelcolor=color)
+    # color = 'tab:red'
+    # ax1.set_xlabel('Epoch')
+    # ax1.set_ylabel('Loss', color=color)
+    # ax1.plot(range(num_epochs), losses, color=color)
+    # ax1.tick_params(axis='y', labelcolor=color)
 
-    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-    color = 'tab:blue'
-    ax2.set_ylabel('Accuracy', color=color)  # we already handled the x-label with ax1
-    ax2.plot(range(num_epochs), accuracies, color=color)
-    ax2.tick_params(axis='y', labelcolor=color)
+    # ax2 = ax1.twinx()  
+    # color = 'tab:blue'
+    # ax2.set_ylabel('Accuracy', color=color)  
+    # ax2.plot(range(num_epochs), accuracies, color=color)
+    # ax2.tick_params(axis='y', labelcolor=color)
 
-    fig.tight_layout()  # otherwise the right y-label is slightly clipped
-    plt.savefig(f'{path}training_metrics.jpg')
+    # fig.tight_layout()  #
+    # plt.savefig(f'{path}training_metrics.jpg')
     
     return model, num_classes, end
 
@@ -227,8 +207,7 @@ def test(model, loader, idx_to_class, num_classes, device):
     correct = [0] * num_classes
     cnt = [0] * num_classes
     class_accuracies = {}
-    # print('HERE')
-    # print(idx_to_class)
+
 
     with torch.no_grad():
         for _, (data, target) in enumerate(tqdm(loader, leave=False)):
@@ -236,7 +215,7 @@ def test(model, loader, idx_to_class, num_classes, device):
             target = target.to(device)
 
             output = model(data)
-            pred = output.argmax(dim=1, keepdim=True)  # Get the index of the max log-probability
+            pred = output.argmax(dim=1, keepdim=True) 
             
             for i in range(target.size(0)):
                 label = target[i].item()
@@ -248,7 +227,7 @@ def test(model, loader, idx_to_class, num_classes, device):
         accuracy = 0. if cnt[i] == 0 else correct[i] / cnt[i]
         class_name = idx_to_class[i]
         class_accuracies[class_name] = accuracy
-    # print(class_accuracies)
+
     return class_accuracies
 
 
@@ -270,7 +249,6 @@ def eval(model, data_loader, batch_size=64, mode='backdoor', print_perform=False
 
         batch_y_predict = torch.argmax(batch_y_predict, dim=1)
 
-        # batch_y = torch.argmax(batch_y, dim=1)
         y_predict.append(batch_y_predict)
         y_true.append(batch_y)
 
@@ -280,11 +258,7 @@ def eval(model, data_loader, batch_size=64, mode='backdoor', print_perform=False
     num_hits = (y_true == y_predict).float().sum()
     acc = num_hits / y_true.shape[0]
     
-    # print(confusion_matrix(y_true.cpu().numpy(), y_predict.cpu().numpy()))
-    
-    # if print_perform and mode != 'backdoor' and mode != 'widen' and mode != 'pruned':
-    #     print(classification_report(y_true.cpu(), y_predict.cpu(), target_names=data_loader.dataset.classes, digits=4))
-        
+ 
     return accuracy_score(y_true.cpu(), y_predict.cpu()), acc
 
 
@@ -309,7 +283,6 @@ def train_engine(args, train_remain_loader, test_remain_loader, train_loader, te
         print('\nretrain model acc:\n', test(retrain_model, test_loader, idx_to_class, num_classes, device))    
         return ori_model, retrain_model, None
     
-    # after training original model, if want to uinlearn a different class
     elif args.retrain_only:
         ori_model = torch.load(args.original_model, map_location=torch.device('cpu')).to(device)
         ori_model.to('cpu')
@@ -339,12 +312,7 @@ def train_engine(args, train_remain_loader, test_remain_loader, train_loader, te
 
         ori_model.to('cpu')
 
-        # '''
-        # GEORGIE YOU COMMENTED OUT THE BELOW LINES WHILE 
-        # DOING SELECTIVE UNLEARNING BC YOU JUST WANTED TO GET THE PTH FILES OF THE UNLEARNED MODEL
-        # 01/13/2025
-        # '''
-        # Load and print retrain model accuracy
+
         retrain_model = torch.load(args.retrain_model, map_location=torch.device('cpu'))
         retrain_model.to(device)
         _, retrain_acc = eval(model=retrain_model, data_loader=test_remain_loader, mode='', print_perform=False, device=device)
@@ -353,10 +321,6 @@ def train_engine(args, train_remain_loader, test_remain_loader, train_loader, te
         print('\nretrain model acc:\n', test(retrain_model, test_loader, idx_to_class, num_classes, device))
 
         retrain_model.to('cpu')
-        # '''
-        # END COMMENT OUT 
-        # 01/13/2025
-        # '''
 
         # Log average accuracy of original and retrain models
         with open(output_file_name, 'a', newline='') as csvfile:
@@ -387,21 +351,8 @@ def train_engine(args, train_remain_loader, test_remain_loader, train_loader, te
             writer.writerow(row_data)
 
 
-        '''
-        GEORGIE YOU COMMENTED OUT THE BELOW LINES WHILE 
-        DOING SELECTIVE UNLEARNING BC YOU JUST WANTED TO GET THE PTH FILES OF THE UNLEARNED MODEL
-        01/13/2025
-        '''
 
-        '''
-        GEORGIE YOU ADDED THIS TO HAVE APPROPRIATE RETURN I HOPE IT DOESNT BREAK ANYTHING
-        -YOU ALSO MODIFIED RETRAIN ACC IN THE WITH OPEN LOGGING CODE MAKE SURE TO CHANGE
-        THAT BACK
-        '''
 
-        # retrain_acc = 1
-
-        # Log average accuracy of original and retrain models
         with open(output_file_name, 'a', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
             row_data = {
@@ -413,7 +364,6 @@ def train_engine(args, train_remain_loader, test_remain_loader, train_loader, te
                 'Unlearning Time': 'N/A',
             }
             
-            # Add entries for each combination of distribution and gamma value
             for dist in distributions:
                 for gamma in gamma_values:
                     forget_acc_col = f'Forget Acc {dist} {gamma}'
@@ -423,10 +373,7 @@ def train_engine(args, train_remain_loader, test_remain_loader, train_loader, te
                     row_data[per_class_acc_col] = 'N/A'
             
             writer.writerow(row_data)
-        '''
-        END COMMENT OUT 
-        01/13/2025
-        '''
+
 
 
         return ori_model, retrain_model, row_data

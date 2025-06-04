@@ -95,30 +95,19 @@ def get_parameters():
     args = parser.parse_args()
 
 
-
-    # Enforce that sgld, closest_points, run_sota, specific_setting are only true if do_unlearning is true
     if args.do_unlearning is False:
         if any([args.sgld, args.closest_points, args.run_sota, args.specific_settings]):
             raise ValueError("SGLD, closest_points, run_sota, and specific_setting can only be set if --do_unlearning is true")
 
-    # If custom_unlearn is true, forget_class should not be defined and to_forget must be defined
-    # if args.custom_unlearn:
-    #     if args.forget_class is not None:
-    #         raise ValueError("If --custom_unlearn is true, --forget_class should not be defined")
-    #     if not args.to_forget:
-    #         raise ValueError("If --custom_unlearn is true, --to_forget must be defined")
 
-    # If unlearn_only is true, original_model and retrain_model must be defined
     if args.do_unlearning:
         if not args.original_model:
             raise ValueError("If --unlearn_only is true, --original_model must be defined")
         if not args.retrain_model:
             raise ValueError("If --unlearn_only is true, --retrain_model must be defined")
 
-    # If data_name is cifar10, model_name must be AllCNN
     if args.data_name == 'cifar10' and args.model_name != 'AllCNN':
         raise ValueError("If --data_name is 'cifar10', --model_name must be 'AllCNN'")
-
 
 
     return args

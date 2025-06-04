@@ -55,9 +55,9 @@ def scrub_met(teacher, student, remain_loader, forget_loader,model_name,dataset,
 
 
     criterion_list = nn.ModuleList([])
-    criterion_list.append(criterion_cls)    # classification loss
-    criterion_list.append(criterion_div)    # KL divergence loss, original knowledge distillation
-    criterion_list.append(criterion_kd)     # other knowledge distillation loss
+    criterion_list.append(criterion_cls)    
+    criterion_list.append(criterion_div)    
+    criterion_list.append(criterion_kd)     
 
     # optimizer
     if optim_name  == "sgd":
@@ -65,15 +65,6 @@ def scrub_met(teacher, student, remain_loader, forget_loader,model_name,dataset,
                               lr=sgda_learning_rate,
                               momentum=sgda_momentum,
                               weight_decay=sgda_weight_decay)
-    # elif optim == "adam": 
-    #     optimizer = optim.Adam(trainable_list.parameters(),
-    #                           lr=sgda_learning_rate,
-    #                           weight_decay=sgda_weight_decay)
-    # elif optim == "rmsp":
-    #     optimizer = optim.RMSprop(trainable_list.parameters(),
-    #                           lr=sgda_learning_rate,
-    #                           momentum=sgda_momentum,
-    #                           weight_decay=sgda_weight_decay)
 
     module_list.append(model_t)
 
@@ -90,12 +81,7 @@ def scrub_met(teacher, student, remain_loader, forget_loader,model_name,dataset,
     acc_vs = []
     acc_fvs = []
     
-    
-    # forget_validation_loader = copy.deepcopy(valid_loader_full)
-    # fgt_cls = list(np.unique(forget_loader.dataset.targets))
-    # indices = [i in fgt_cls for i in forget_validation_loader.dataset.targets]
-    # forget_validation_loader.dataset.data = forget_validation_loader.dataset.data[indices]
-    # forget_validation_loader.dataset.targets = forget_validation_loader.dataset.targets[indices]
+
     
     scrub_name = "checkpoints/scrub_{}_{}_seed{}_step".format(model_name, dataset, seed)
     for epoch in range(1, sgda_epochs + 1):
@@ -104,12 +90,10 @@ def scrub_met(teacher, student, remain_loader, forget_loader,model_name,dataset,
 
         acc_r, acc5_r, loss_r = validate(remain_loader, model_s, criterion_cls,  True)
         acc_f, acc5_f, loss_f = validate(forget_loader, model_s, criterion_cls,  True)
-        # acc_v, acc5_v, loss_v = validate(valid_loader_full, model_s, criterion_cls, args, True)
-        # acc_fv, acc5_fv, loss_fv = validate(forget_validation_loader, model_s, criterion_cls, args, True)
+
         acc_rs.append(100-acc_r.item())
         acc_fs.append(100-acc_f.item())
-        # acc_vs.append(100-acc_v.item())
-        # acc_fvs.append(100-acc_fv.item())
+
 
         maximize_loss = 0
         if epoch <= msteps:
@@ -128,26 +112,10 @@ def scrub_met(teacher, student, remain_loader, forget_loader,model_name,dataset,
 
     acc_r, acc5_r, loss_r = validate(remain_loader, model_s, criterion_cls,  True)
     acc_f, acc5_f, loss_f = validate(forget_loader, model_s, criterion_cls,  True)
-    # acc_v, acc5_v, loss_v = validate(valid_loader_full, model_s, criterion_cls, args, True)
-    # acc_fv, acc5_fv, loss_fv = validate(forget_validation_loader, model_s, criterion_cls, args, True)
+
     acc_rs.append(100-acc_r.item())
     acc_fs.append(100-acc_f.item())
-    # acc_vs.append(100-acc_v.item())
-    # acc_fvs.append(100-acc_fv.item())
 
-    # from matplotlib import pyplot as plt
-    # indices = list(range(0,len(acc_rs)))
-    # plt.plot(indices, acc_rs, marker='*', color=u'#1f77b4', alpha=1, label='retain-set')
-    # plt.plot(indices, acc_fs, marker='o', color=u'#ff7f0e', alpha=1, label='forget-set')
-    # plt.plot(indices, acc_vs, marker='^', color=u'#2ca02c',alpha=1, label='validation-set')
-    # plt.plot(indices, acc_fvs, marker='.', color='red',alpha=1, label='forget-validation-set')
-    # plt.legend(prop={'size': 14})
-    # plt.tick_params(labelsize=12)
-    # plt.xlabel('epoch',size=14)
-    # plt.ylabel('error',size=14)
-    # plt.grid()
-    # plt.show()
-    
     
     try:
         selected_idx, _ = min(enumerate(acc_fs), key=lambda x: abs(x[1]-acc_fvs[-1]))

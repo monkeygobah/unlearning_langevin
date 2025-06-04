@@ -73,14 +73,12 @@ def plot_tsne(embeddings, predictions, is_forget_sample, true_labels, title, ax,
     rem = ~is_forget_sample
     fog =  is_forget_sample
 
-    # Color maps
-    class_colors = {0:'red', 1:'green', 2:'blue'}  # Extend as needed
+    class_colors = {0:'red', 1:'green', 2:'blue'}  
     true_color_map = np.array([class_colors[t] for t in true_labels])
     pred_color_map = np.array([class_colors[p] for p in predictions])
     edge_colors = np.where(mis, pred_color_map, 'none')
     line_widths = np.where(mis, 3, 0)
 
-    # === Draw tighter, smoother decision boundary ===
     def draw_boundary():
         clf = KNeighborsClassifier(n_neighbors=5).fit(pts, predictions)
         x_min, x_max = pts[:,0].min(), pts[:,0].max()
@@ -93,13 +91,11 @@ def plot_tsne(embeddings, predictions, is_forget_sample, true_labels, title, ax,
         ax.contourf(xx, yy, Z, alpha=0.25, cmap=cmap, 
                     levels=np.arange(len(class_colors)+1)-0.5)
 
-        # Set limits tightly around data
         ax.set_xlim(x_min - padding, x_max + padding)
         ax.set_ylim(y_min - padding, y_max + padding)
 
     draw_boundary()
 
-    # === Plot remain samples ===
     ax.scatter(
         pts[rem,0], pts[rem,1],
         facecolors=true_color_map[rem],
@@ -108,7 +104,6 @@ def plot_tsne(embeddings, predictions, is_forget_sample, true_labels, title, ax,
         marker='o', s=200, alpha=0.8
     )
 
-    # === Plot forget samples ===
     ax.scatter(
         pts[fog,0], pts[fog,1],
         facecolors=true_color_map[fog],
@@ -117,7 +112,6 @@ def plot_tsne(embeddings, predictions, is_forget_sample, true_labels, title, ax,
         marker='*', s=500, alpha=0.95
     )
 
-    # === Style ===
     ax.set_title(title, fontsize=16)
     ax.set_xticks([])
     ax.set_yticks([])
@@ -154,7 +148,6 @@ def save_unlearning_examples(model, forget_loader, remain_loader, device, save_d
     os.makedirs(f"{save_dir}/remain_correct", exist_ok=True)
 
     with torch.no_grad():
-        # Process forget set
         for i, (data, target) in enumerate(forget_loader):
             data = data.to(device)
             output = model(data)
@@ -167,7 +160,6 @@ def save_unlearning_examples(model, forget_loader, remain_loader, device, save_d
                     img = unnormalize(data[j].cpu()).clamp(0, 1)
                     save_image(img, path)
 
-        # Process remain set
         for i, (data, target) in enumerate(remain_loader):
             data = data.to(device)
             output = model(data)
@@ -181,32 +173,4 @@ def save_unlearning_examples(model, forget_loader, remain_loader, device, save_d
                     save_image(img, path)
 
 
-
-
-# def plot_tsne(embeddings, predictions, is_forget_sample, title, ax, add_legend=False):
-#     tsne = TSNE(n_components=2, random_state=0)
-#     tsne_result = tsne.fit_transform(embeddings)
-    
-#     unique_classes = np.unique(predictions)
-#     class_colors = {0: 'red', 1: 'green', 2: 'blue'}
-#     colors = [class_colors[cls] for cls in unique_classes]
-#     custom_cmap = ListedColormap(colors)
-
-#     # class_colors = ['red', 'green', 'blue'][:len(unique_classes)]
-#     # custom_cmap = ListedColormap(class_colors)
-#     scatter = ax.scatter(tsne_result[:, 0], tsne_result[:, 1], c=predictions, cmap=custom_cmap, s=100, alpha=0.7)
-    
-#     forget_tsne = tsne_result[is_forget_sample]
-#     forget_preds = predictions[is_forget_sample]
-#     ax.scatter(forget_tsne[:, 0], forget_tsne[:, 1], c=forget_preds, cmap=custom_cmap, s=400, edgecolors='black', marker='*')
-    
-#     ax.set_title(title)
-#     ax.set_xticks([])
-#     ax.set_yticks([])
-    
-#     if add_legend:
-#         handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=custom_cmap(i), markersize=10) for i in range(len(unique_classes))]
-#         labels = [f'Class {cls}' for cls in unique_classes]
-#         legend1 = ax.legend(handles, labels, title="Classes", loc="best", fontsize=12)
-#         ax.add_artist(legend1)
 

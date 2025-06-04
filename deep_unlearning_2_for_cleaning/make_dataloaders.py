@@ -14,19 +14,15 @@ from torchvision import datasets, transforms
 
 def resize_width_pad_height(target_width=512, target_height=512):
     def transform(image):
-        # Calculate the new height maintaining the aspect ratio
         aspect_ratio = image.width / image.height
         new_height = int(round(target_width / aspect_ratio))
 
-        # Resize the image to have the correct width
         resize_transform = transforms.Resize((new_height, target_width))
         resized_image = resize_transform(image)
 
-        # Calculate padding to add to the top and bottom to reach the target height
         padding_top = (target_height - new_height) // 2
         padding_bottom = target_height - new_height - padding_top
 
-        # Pad the resized image to have the correct height
         pad_transform = transforms.Pad((0, padding_top, 0, padding_bottom), fill=0, padding_mode='constant')
         padded_image = pad_transform(resized_image)
 
@@ -43,7 +39,7 @@ def get_dataset(data_name, path='./data'):
     if data_name == 'mnist':
         transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,))  # MNIST-specific normalization
+            transforms.Normalize((0.1307,), (0.3081,))  
         ])
         trainset = datasets.MNIST(root=path, train=True, download=True, transform=transform)
         testset = datasets.MNIST(root=path, train=False, download=True, transform=transform)
@@ -55,7 +51,7 @@ def get_dataset(data_name, path='./data'):
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))  # CIFAR-10 normalization
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))  
         ])
         
         test_transform = transforms.Compose([
@@ -74,12 +70,12 @@ def get_dataset(data_name, path='./data'):
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970))  # SVHN-specific normalization
+            transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970))  
         ])
         
         test_transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970))  # SVHN normalization
+            transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970))  
         ])
         
         trainset = datasets.SVHN(root=path, split='train', download=True, transform=train_transform)
@@ -88,18 +84,17 @@ def get_dataset(data_name, path='./data'):
         return trainset, testset, dataset
 
     elif data_name == 'fashionmnist':
-        # FashionMNIST is grayscale (1 channel) and has 28x28 images, so we resize to 32x32
         train_transform = transforms.Compose([
-            transforms.Resize(32),  # Resize to 32x32
+            transforms.Resize(32),  
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize((0.5,), (0.5,))  # FashionMNIST-specific grayscale normalization
+            transforms.Normalize((0.5,), (0.5,))  
         ])
         
         test_transform = transforms.Compose([
-            transforms.Resize(32),  # Resize to 32x32
+            transforms.Resize(32),  
             transforms.ToTensor(),
-            transforms.Normalize((0.5,), (0.5,))  # Grayscale normalization
+            transforms.Normalize((0.5,), (0.5,))  
         ])
         
         trainset = datasets.FashionMNIST(root=path, train=True, download=True, transform=train_transform)
@@ -108,7 +103,7 @@ def get_dataset(data_name, path='./data'):
         return trainset, testset, dataset
 
     elif data_name == 'medmnist':
-        info = INFO['pathmnist']  # You can adjust 'pathmnist' for different MedMNIST datasets
+        info = INFO['pathmnist']  
 
         n_channels = info['n_channels']
         n_classes = len(info['label'])
@@ -116,16 +111,16 @@ def get_dataset(data_name, path='./data'):
         DataClass = getattr(medmnist, info['python_class'])
         
         train_transform = transforms.Compose([
-            transforms.Resize(32),  # Resize to 32x32
+            transforms.Resize(32), 
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))  # RGB normalization (assuming 3 channels)
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))  
         ])
         
         test_transform = transforms.Compose([
-            transforms.Resize(32),  # Resize to 32x32
+            transforms.Resize(32),  
             transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))  # RGB normalization
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)) 
         ])
         
         trainset = DataClass(split='train', transform=train_transform, download=True)
@@ -243,21 +238,21 @@ def split_metadata_data(subset, metadata_dict, unlearn_attribute, num_forget):
     remain_index = []
     sum = 0
     
-    original_dataset = subset.dataset  # Access the original dataset
-    for i, subset_index in enumerate(subset.indices):  # Iterate through indices of the subset
-        img_path, _ = original_dataset.imgs[subset_index]  # Access the image path using the original dataset
+    original_dataset = subset.dataset  
+    for i, subset_index in enumerate(subset.indices):  
+        img_path, _ = original_dataset.imgs[subset_index]  
         filename = os.path.basename(img_path)
         if filename in metadata_dict:
             ohe_vector = metadata_dict[filename]
             if ohe_vector[attr_index] == 1 and sum < num_forget:
-                forget_index.append(i)  # Use subset_index
+                forget_index.append(i) 
                 sum += 1
             elif ohe_vector[attr_index] == 1 and sum >= num_forget:
-                class_remain_index.append(i)  # Use subset_index
-                remain_index.append(i)  # Use subset_index
+                class_remain_index.append(i)  
+                remain_index.append(i)  
                 sum += 1
             else:
-                remain_index.append(i)  # Use subset_index
+                remain_index.append(i)  
 
     return forget_index, remain_index, class_remain_index
 
@@ -266,17 +261,14 @@ def get_custom_unlearn_loader(trainset, testset, train_dict, test_dict, unlearn_
     num_forget = 1000
     repair_num_ratio = 0.01  
     
-    # Use the split_metadata_data function for both train and test sets
     train_forget_index, train_remain_index, class_remain_index = split_metadata_data(
         trainset, train_dict, unlearn_attribute, num_forget)
     
     test_forget_index, test_remain_index, _ = split_metadata_data(
         testset, test_dict, unlearn_attribute, num_forget=len(testset.dataset.imgs))
 
-    # Sampling a subset of the class_remain_index for repairs
     repair_class_index = random.sample(class_remain_index, int(repair_num_ratio * len(class_remain_index)))
 
-    # Creating samplers based on the indices
     train_forget_sampler = SubsetRandomSampler(train_forget_index)
     train_remain_sampler = SubsetRandomSampler(train_remain_index)
     
@@ -285,7 +277,6 @@ def get_custom_unlearn_loader(trainset, testset, train_dict, test_dict, unlearn_
     test_forget_sampler = SubsetRandomSampler(test_forget_index)
     test_remain_sampler = SubsetRandomSampler(test_remain_index)
 
-    # Creating data loaders using the samplers
     train_forget_loader = torch.utils.data.DataLoader(dataset=trainset, batch_size=batch_size, sampler=train_forget_sampler)
     train_remain_loader = torch.utils.data.DataLoader(dataset=trainset, batch_size=batch_size, sampler=train_remain_sampler)
 
@@ -348,10 +339,8 @@ def get_relearn_loader_from_remain(train_remain_loader, batch_size, metadata_df,
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
 
-    # Initialize lists for indices
     relearn_indices = []
 
-    # Access the original dataset from the train_remain_loader
     original_dataset = train_remain_loader.dataset.dataset
 
     for idx in train_remain_loader.dataset.indices:
@@ -363,11 +352,9 @@ def get_relearn_loader_from_remain(train_remain_loader, batch_size, metadata_df,
             if metadata_df[metadata_df['de_FileName'] == filename]['DeviceProc'].values[0] != exclude_feature:
                 relearn_indices.append(idx)
 
-    # Create a dataset with the filtered samples
     relearn_dataset = torch.utils.data.Subset(original_dataset, relearn_indices)
     relearn_dataset.dataset.transform = class_transforms
 
-    # Create a DataLoader
     relearn_loader = DataLoader(relearn_dataset, batch_size=batch_size, shuffle=True)
 
     return relearn_loader
@@ -498,7 +485,6 @@ def map_metadata_oculoplastics(dataset, df, feature='vert_pf', threshold=11):
     for img_path, _ in dataset.dataset.imgs:
         filename = os.path.basename(img_path)
         row = df[df['file'] == filename[:-9]]
-        # print(row)
         if not row.empty:
             left_feature = row[f'left_{feature}'].values[0]
             right_feature = row[f'right_{feature}'].values[0]

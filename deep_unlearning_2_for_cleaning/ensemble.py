@@ -18,11 +18,9 @@ def run_exps(args, testset, trainset, train_remain_loader, finetune=False, froze
             param.requires_grad = True
 
     test_forget_loader, test_remain_loader = get_forget_loader(testset, args.forget_class)
-    # _, train_remain_loader = get_forget_loader(trainset, args.forget_class)
 
     fc_from_good_f = good_f.module.classifier
     good_r.module.classifier = fc_from_good_f
-    # good_r = torch.nn.DataParallel(good_r) 
 
     epochs = 0
     start=time.time()

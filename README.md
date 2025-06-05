@@ -6,7 +6,7 @@ This repository implements a bilevel optimization approach to machine unlearning
 - A novel model composition strategy that can outperform full retraining
 - Unlearning under class-, device-, and diagnosis-based conditions (standard + selective)
 
-![fig_1](https://github.com/user-attachments/assets/241c00e0-c4dc-49a7-900e-556c198def0b)
+![figure_1_homa](https://github.com/user-attachments/assets/56880ef7-40ef-48bf-8d87-fd9b5a4ab129)
 
 ---
 

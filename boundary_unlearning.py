@@ -4,11 +4,11 @@ from trainer import eval, loss_picker, optimizer_picker
 import numpy as np
 import torch
 from torch import nn
-from adv_generator import LinfPGD, inf_generator, FGSM
+from adv_generator import  inf_generator, FGSM
 import tqdm
 import time
 from models import init_params as w_init
-from expand_exp import curvature, weight_assign
+# from expand_exp import curvature, weight_assign
 import pandas as pd
 from make_dataloaders import *
 
@@ -64,7 +64,7 @@ def boundary_shrink(ori_model, train_forget_loader, dt, dv, test_loader, device,
     nearest_label = []
 
     num_iterations = poison_epoch * batches_per_epoch
-    print(num_iterations)
+
     print(f'remain reg param : {remain_reg_param}')
     print(f'gamma: {gamma}')
     print(f'lamda: {lamda} ')
@@ -142,7 +142,6 @@ def boundary_shrink(ori_model, train_forget_loader, dt, dv, test_loader, device,
         optimizer.step()
 
     print('attack success ratio:', (num_hits / num_sum).float())
-    # print(nearest_label)
     print('boundary shrink time:', (time.time() - start_time))
     boundary_shrink_time = time.time() - start_time
 
@@ -178,31 +177,12 @@ def boundary_shrink(ori_model, train_forget_loader, dt, dv, test_loader, device,
     _, remain_acc = eval(model=unlearn_model, data_loader=test_remain_loader, mode=mode, print_perform=False,
                          device=device, name='test set remain class')
     
-    # unlearn_model.to('cpu')
-    # ori_model.to(device)
 
-    # _, forget_acc_orig = eval(model=ori_model, data_loader=test_forget_loader, mode=mode, print_perform=False,
-    #                      device=device, name='test set forget class original model')
-    
-    # _, remain_acc_orig = eval(model=ori_model, data_loader=test_remain_loader, mode=mode, print_perform=False,
-    #                      device=device, name='test set remain class original model')
-    # ori_model.to('cpu')
-    # retrain_model.to(device)
-
-    # _, forget_acc_retrain = eval(model=retrain_model, data_loader=test_forget_loader, mode=mode, print_perform=False,
-    #                      device=device, name='test set forget class retrain model')
-    
-    # _, remain_acc_retrain = eval(model=retrain_model, data_loader=test_remain_loader, mode=mode, print_perform=False,
-    #                      device=device, name='test set remain class retrain model')
-    # retrain_model.to('cpu')
 
     
     print('test acc:{:.2%}, forget acc:{:.2%}, remain acc:{:.2%}'
           .format(test_acc, forget_acc, remain_acc))
     
-    # print('orig forget acc:{:.2%}, orig remain acc:{:.2%}, retrain forget acc:{:.2%}, retrain remain acc:{:.2%}'
-    #       .format(forget_acc_orig, remain_acc_orig, forget_acc_retrain, remain_acc_retrain ))
-
     end = time.time()
     print('Time Consuming:', end - start, 'secs')
 

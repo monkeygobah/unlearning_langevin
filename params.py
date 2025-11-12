@@ -78,7 +78,7 @@ def get_parameters():
 
 
     parser.add_argument('--use_logits', action='store_true', help='toggle whether or not to logits or argmax of adv sample')
-    parser.add_argument('--remain_reg', type=float, help='contribution of remain loss to add to total loss')
+    parser.add_argument('--remain_reg', type=float, default=0, help='contribution of remain loss to add to total loss')
     parser.add_argument('--logit_preprocess', action='store_true', help='toggle whether or not to preprocess logits')
 
 
@@ -100,11 +100,11 @@ def get_parameters():
             raise ValueError("SGLD, closest_points, run_sota, and specific_setting can only be set if --do_unlearning is true")
 
 
-    if args.do_unlearning:
-        if not args.original_model:
-            raise ValueError("If --unlearn_only is true, --original_model must be defined")
-        if not args.retrain_model:
-            raise ValueError("If --unlearn_only is true, --retrain_model must be defined")
+    # if args.do_unlearning:
+    #     if not args.original_model:
+    #         raise ValueError("If --unlearn_only is true, --original_model must be defined")
+    #     if not args.retrain_model:
+    #         raise ValueError("If --unlearn_only is true, --retrain_model must be defined")
 
     if args.data_name == 'cifar10' and args.model_name != 'AllCNN':
         raise ValueError("If --data_name is 'cifar10', --model_name must be 'AllCNN'")

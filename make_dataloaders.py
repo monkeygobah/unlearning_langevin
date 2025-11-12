@@ -470,6 +470,8 @@ def dataloader_engine(args, trainset, testset, combined_df, num_forget=5000, ocu
         print('getting unlearn loader')
         forget_class = args.forget_class
         num_forget = num_forget
+        print(forget_class, num_forget)
+
         train_dict = None
         test_dict = None
         train_forget_loader, train_remain_loader, test_forget_loader, test_remain_loader, repair_class_loader, \

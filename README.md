@@ -32,7 +32,7 @@ python main.py --forget_class 0 \
                --train
 ```
 
-To perform unlearning using our method with SGLD-style regularization:
+To perform unlearning using our method with specific lambda and gamma values:
 
 ```bash
 python main.py --forget_class 0 \
@@ -42,12 +42,11 @@ python main.py --forget_class 0 \
                --epoch 25 \
                --batch_size 64 \
                --gpu_id 0 \
-               --sgld \
                --do_unlearning \
                --specific_settings \
                --gamma 0.0001 \
                --lamda 0 \
-               --remain_reg 0.0001 \
+               --remain_reg 0 \
                --name 'unlearn_cifar10_class0' \
                --original_model 'model_checkpoints/...original_model.pth' \
                --retrain_model 'model_checkpoints/...retrain_model.pth'

@@ -3,7 +3,7 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 import torch
 from torch import nn, optim
 from tqdm import tqdm
-from models import AllCNN, CustomResNet, MNISTNet
+from models import AllCNN, CustomResNet
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from torchvision.models import resnet50, ResNet50_Weights
@@ -284,13 +284,13 @@ def train_engine(args, train_remain_loader, test_remain_loader, train_loader, te
         return ori_model, retrain_model, None
     
     elif args.retrain_only:
-        ori_model = torch.load(args.original_model, map_location=torch.device('cpu')).to(device)
+        ori_model = torch.load(args.original_model, map_location=torch.device('cpu'), weights_only=False).to(device)
         ori_model.to('cpu')
         print(model_name + "_retrain_" + exp_name + '_' )
         retrain_model, _, time_retrain = train_save_model(train_remain_loader, test_remain_loader, args.model_name, args.optim_name,
                                         args.lr, args.epoch, device,  model_name + "_retrain_" + exp_name + '_' , dataset=dataset, data_name=args.data_name)
 
-        # print('\nretrain model acc:\n', test(retrain_model, test_loader, idx_to_class, num_classes, device))   
+        print('\nretrain model acc:\n', test(retrain_model, test_loader, idx_to_class, num_classes, device))   
 
         print(f'RETRAIN TIME {time_retrain}')
 

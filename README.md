@@ -1,12 +1,19 @@
 # Targeted Unlearning with Perturbed Sign Gradient Methods
 
-This repository implements a bilevel optimization approach to machine unlearning, enabling controlled forgetting of specific training samples while retaining performance on the remaining data. Our method outperforms standard baselines across five datasets (CIFAR-10, FashionMNIST, SVHN, Fundus, and Oculoplastics) and introduces:
+Repository for a bilevel optimization approach to machine unlearning, enabling controlled forgetting of specific training samples while retaining performance on the remaining data. Our method outperforms or rivals standard baselines across five datasets (CIFAR-10, FashionMNIST, SVHN, Fundus, and Oculoplastics) and introduces:
 
+- Clear convergence guarantees
 - Tunable hyperparameters for remain/forget control (`λ`, `γ`, etc.)
-- A novel model composition strategy that can outperform full retraining
 - Unlearning under class-, device-, and diagnosis-based conditions (standard + selective)
 
+In addition to experiments on open source datasets, we also report unlearning experiments on real world clinical imaging data.
+
 ![figure_1_homa](https://github.com/user-attachments/assets/56880ef7-40ef-48bf-8d87-fd9b5a4ab129)
+
+---
+
+## Abstract
+Machine unlearning aims to remove the influence of specific training samples from a trained model without full retraining. While prior work has largely focused on privacy-motivated settings, we recast unlearning as a general-purpose tool for post-deployment model revision. Specifically, we focus on utilizing unlearning in clinical contexts where data shifts, device deprecation, and policy changes are common. To this end, we propose a bilevel optimization formulation of boundary-based unlearning that can be solved using  iterative algorithms. We provide convergence guarantees when first order algorithms are used to unlearn and introduce a tunable loss design for controlling the forgetting–retention tradeoff. Across benchmark and real-world clinical imaging datasets, our approach outperforms baselines on both forgetting and retention metrics, including scenarios involving imaging devices and anatomical outliers. This work demonstrates the feasibility of unlearning on clinical imaging datasets and proposes it as a tool for model maintenance in scenarios that require removing the influence of specific data points without full model retraining.
 
 ---
 
@@ -99,3 +106,7 @@ If you found this work useful, please consider citing:
       primaryClass={eess.IV},
       url={https://arxiv.org/abs/2505.21872}, 
 }
+
+## Contact
+
+For questions, contact gnahas2@uic.edu and sathya@uic.edu

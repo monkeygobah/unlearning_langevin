@@ -90,12 +90,12 @@ Baselines were established using code found in baselines directory.
 
 If you found this work useful, please consider citing:
 
-@misc{nahass2025targetedunlearningusingperturbed,  
-  title={Targeted Unlearning Using Perturbed Sign Gradient Methods With Applications On Medical Images},  
-  author={George R. Nahass and Zhu Wang and Homa Rashidisabet and Won Hwa Kim and Sasha Hubschman and Jeffrey C. Peterson and Ghasem Yazdanpanah and Chad A. Purnell and Pete Setabutr and Ann Q. Tran and Darvin Yi and Sathya N. Ravi},  
-  year={2025},  
-  eprint={2505.21872},  
-  archivePrefix={arXiv},  
-  primaryClass={eess.IV},  
-  url={https://arxiv.org/abs/2505.21872}  
+@misc{nahass2025targetedunlearningusingperturbed,
+      title={Targeted Unlearning Using Perturbed Sign Gradient Methods With Applications On Medical Images}, 
+      author={George R. Nahass and Zhu Wang and Homa Rashidisabet and Won Hwa Kim and Sasha Hubschman and Jeffrey C. Peterson and Chad A. Purnell and Pete Setabutr and Ann Q. Tran and Darvin Yi and Sathya N. Ravi},
+      year={2025},
+      eprint={2505.21872},
+      archivePrefix={arXiv},
+      primaryClass={eess.IV},
+      url={https://arxiv.org/abs/2505.21872}, 
 }

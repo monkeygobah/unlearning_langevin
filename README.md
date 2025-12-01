@@ -10,6 +10,12 @@ In addition to experiments on open source datasets, we also report unlearning ex
 
 ![figure_1_homa](https://github.com/user-attachments/assets/56880ef7-40ef-48bf-8d87-fd9b5a4ab129)
 
+## Demo
+
+A live demo of our work can be found here!
+
+https://huggingface.co/spaces/grnahass/unlearning?logs=container 
+
 ---
 
 ## Abstract
